@@ -1,0 +1,1 @@
+﻿{"manifest_version":3,"name":"YT No Blur","version":"1.5.0","description":"Rimuove blur e Ambient Mode da YouTube. Sfondi solidi al posto della trasparenza.","content_scripts":[{"matches":["*://www.youtube.com/*","*://m.youtube.com/*"],"js":["content.js"],"css":["styles.css"],"run_at":"document_start","all_frames":true}]}

@@ -1,0 +1,9 @@
+/* YT No Blur v1.5 */
+*,*::before,*::after{backdrop-filter:none!important}
+[style*="blur("]{filter:none!important}
+:is([style*="backdrop-filter"],ytd-masthead,#masthead,#masthead-container,ytd-feed-filter-chip-bar-renderer,ytd-feed-filter-chip-bar-renderer #chips-wrapper,ytd-feed-filter-chip-bar-renderer #container){background:var(--yt-spec-base-background,#fff)!important}
+html[dark] :is([style*="backdrop-filter"],ytd-masthead,#masthead,#masthead-container,ytd-feed-filter-chip-bar-renderer,ytd-feed-filter-chip-bar-renderer #chips-wrapper,ytd-feed-filter-chip-bar-renderer #container){background:var(--yt-spec-base-background,#0f0f0f)!important}
+:is(ytd-popup-container,tp-yt-paper-dialog,tp-yt-paper-toast,ytd-menu-popup-renderer,ytd-multi-page-menu-renderer){background:var(--yt-spec-raised-background,#f2f2f2)!important}
+html[dark] :is(ytd-popup-container,tp-yt-paper-dialog,tp-yt-paper-toast,ytd-menu-popup-renderer,ytd-multi-page-menu-renderer){background:var(--yt-spec-raised-background,#212121)!important}
+:is(#cinematics,ytd-cinematics),:is(#cinematics,ytd-cinematics) *{display:none!important}
+:is(#movie_player,#player,#player-container) canvas{display:none!important}
