@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>YT No Blur</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>YT No Blur</h1>
+          <span class="version">v3.0</span>
+        </div>
+      </div>
+      <span id="status-badge" class="status-badge" aria-live="polite">5/5 attivi</span>
+    </header>
+
+    <main class="controls" aria-label="Moduli di ottimizzazione">
+      <label class="toggle-row" for="toggle-noBlur">
+        <div class="toggle-info">
+          <span class="toggle-title">Rimuovi Blur &amp; Trasparenze</span>
+          <span class="toggle-desc">Sfondi solidi · risparmia ~4,7s di compositing GPU</span>
+        </div>
+        <span class="switch">
+          <input id="toggle-noBlur" type="checkbox" role="switch" data-key="noBlur" checked />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <label class="toggle-row" for="toggle-noAmbient">
+        <div class="toggle-info">
+          <span class="toggle-title">Disattiva Ambient Mode</span>
+          <span class="toggle-desc">Spegne il bagliore cinematics su ytcfg e canvas</span>
+        </div>
+        <span class="switch">
+          <input id="toggle-noAmbient" type="checkbox" role="switch" data-key="noAmbient" checked />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <label class="toggle-row" for="toggle-noHover">
+        <div class="toggle-info">
+          <span class="toggle-title">Blocca Anteprime Video Hover</span>
+          <span class="toggle-desc">Elimina il 2° player inline e blocchi CPU da 650ms</span>
+        </div>
+        <span class="switch">
+          <input id="toggle-noHover" type="checkbox" role="switch" data-key="noHover" checked />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <label class="toggle-row" for="toggle-domVirt">
+        <div class="toggle-info">
+          <span class="toggle-title">Virtualizzazione DOM</span>
+          <span class="toggle-desc">Abbatte ~9.000 nodi fuori schermo (content-visibility)</span>
+        </div>
+        <span class="switch">
+          <input id="toggle-domVirt" type="checkbox" role="switch" data-key="domVirt" checked />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <label class="toggle-row" for="toggle-fastAnim">
+        <div class="toggle-info">
+          <span class="toggle-title">Riduci Animazioni e Transizioni</span>
+          <span class="toggle-desc">Azzera Polymer/Lit · preserva controlli del player</span>
+        </div>
+        <span class="switch">
+          <input id="toggle-fastAnim" type="checkbox" role="switch" data-key="fastAnim" checked />
+          <span class="slider" aria-hidden="true"></span>
+        </span>
+      </label>
+
+      <p id="ambient-hint" class="hint" role="status" hidden>
+        Riattivare Ambient Mode ha effetto al ricaricamento (F5) delle schede già aperte.
+      </p>
+    </main>
+
+    <footer class="footer">
+      <button id="btn-reset" type="button" class="reset-btn">
+        Ripristina Prestazioni Massime
+      </button>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

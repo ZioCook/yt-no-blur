@@ -1,1 +1,34 @@
-﻿{"manifest_version":3,"name":"YT No Blur","version":"1.5.0","description":"Rimuove blur e Ambient Mode da YouTube. Sfondi solidi al posto della trasparenza.","content_scripts":[{"matches":["*://www.youtube.com/*","*://m.youtube.com/*"],"js":["content.js"],"css":["styles.css"],"run_at":"document_start","all_frames":true}]}
+﻿{
+  "manifest_version": 3,
+  "name": "YT No Blur",
+  "version": "3.0.0",
+  "description": "Ottimizzazione estrema e modulare per YouTube: rimuove blur, Ambient Mode, anteprime hover e animazioni pesanti con virtualizzazione DOM.",
+  "minimum_chrome_version": "118",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YT No Blur"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
+      "css": ["styles.css"],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": ["*://www.youtube.com/*", "*://m.youtube.com/*"],
+      "js": ["bridge.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED",
+      "all_frames": true
+    }
+  ]
+}

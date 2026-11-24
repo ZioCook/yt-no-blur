@@ -1,9 +1,211 @@
-/* YT No Blur v1.5 */
-*,*::before,*::after{backdrop-filter:none!important}
-[style*="blur("]{filter:none!important}
-:is([style*="backdrop-filter"],ytd-masthead,#masthead,#masthead-container,ytd-feed-filter-chip-bar-renderer,ytd-feed-filter-chip-bar-renderer #chips-wrapper,ytd-feed-filter-chip-bar-renderer #container){background:var(--yt-spec-base-background,#fff)!important}
-html[dark] :is([style*="backdrop-filter"],ytd-masthead,#masthead,#masthead-container,ytd-feed-filter-chip-bar-renderer,ytd-feed-filter-chip-bar-renderer #chips-wrapper,ytd-feed-filter-chip-bar-renderer #container){background:var(--yt-spec-base-background,#0f0f0f)!important}
-:is(ytd-popup-container,tp-yt-paper-dialog,tp-yt-paper-toast,ytd-menu-popup-renderer,ytd-multi-page-menu-renderer){background:var(--yt-spec-raised-background,#f2f2f2)!important}
-html[dark] :is(ytd-popup-container,tp-yt-paper-dialog,tp-yt-paper-toast,ytd-menu-popup-renderer,ytd-multi-page-menu-renderer){background:var(--yt-spec-raised-background,#212121)!important}
-:is(#cinematics,ytd-cinematics),:is(#cinematics,ytd-cinematics) *{display:none!important}
-:is(#movie_player,#player,#player-container) canvas{display:none!important}
+/* ==========================================================================
+   YT No Blur v3.0.0 - Modular Extreme Performance CSS (Desktop & Mobile)
+   - Ogni modulo è governato da `@scope (:root.ytnb-*)` (Blink StyleScopeFrame O(1))
+   - Zero ancestor-walk su html.ytnb-*, zero bloat di specificità
+   - Modulo 5 integra il Donut Scope v2.1.0 per volume, autohide e settings player
+   ========================================================================== */
+
+/* Variabili tema valutate UNA SOLA VOLTA sulla radice (ereditano negli Shadow DOM) */
+:root {
+  --ytnb-bg-base: var(--yt-spec-base-background, #ffffff);
+  --ytnb-bg-raised: var(--yt-spec-raised-background, #f2f2f2);
+}
+
+html[dark] {
+  --ytnb-bg-base: var(--yt-spec-base-background, #0f0f0f);
+  --ytnb-bg-raised: var(--yt-spec-raised-background, #212121);
+}
+
+/* ==========================================================================
+   MODULO 1: Rimuovi Blur, Trasparenze e Layer GPU superflui (ytnb-no-blur)
+   ========================================================================== */
+@scope (:root.ytnb-no-blur) {
+  *,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* O(1) tag-name check; preserva accessibilità root, video e ombre SVG player */
+  :where(:not(html, body, video, svg, g, path, use)),
+  *::before,
+  *::after {
+    filter: none !important;
+  }
+
+  /* Stop promozione speculativa layer GPU Polymer (preserva decoder <video>) */
+  :where(:not(video)) {
+    will-change: auto !important;
+  }
+
+  #frosted-glass,
+  .ytd-app#frosted-glass {
+    display: none !important;
+  }
+
+  ytd-masthead,
+  #masthead,
+  #masthead-container,
+  #background.ytd-masthead,
+  ytd-feed-filter-chip-bar-renderer,
+  ytd-feed-filter-chip-bar-renderer #chips-wrapper,
+  ytd-feed-filter-chip-bar-renderer #container,
+  ytm-mobile-topbar-renderer,
+  ytm-feed-filter-chip-bar-renderer {
+    background: var(--ytnb-bg-base) !important;
+  }
+
+  tp-yt-paper-dialog,
+  tp-yt-paper-toast,
+  ytd-menu-popup-renderer,
+  ytd-multi-page-menu-renderer,
+  yt-sheet-view-model,
+  .ytSheetViewModelHost,
+  .ytSearchboxComponentSuggestionsContainer,
+  .sbdd_b {
+    background-color: var(--ytnb-bg-raised) !important;
+  }
+
+  /* Guscio menu player (esclude .ytp-panel interno per slide puliti) */
+  .ytp-popup:not(.ytp-button),
+  .ytp-settings-menu,
+  .ytp-volume-popover {
+    background-color: rgba(20, 20, 20, 0.96) !important;
+  }
+}
+
+/* ==========================================================================
+   MODULO 2: Disattiva Ambient Mode / Cinematics (ytnb-no-ambient)
+   ========================================================================== */
+@scope (:root.ytnb-no-ambient) {
+  #cinematics,
+  #cinematics-container,
+  #cinematics-full-bleed-container,
+  ytd-cinematics,
+  ytd-cinematic-container,
+  .player-cinematics {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+/* ==========================================================================
+   MODULO 3: Blocca Anteprime Video Hover (ytnb-no-hover)
+   ========================================================================== */
+@scope (:root.ytnb-no-hover) {
+  ytd-video-preview,
+  #mouseover-overlay,
+  ytd-moving-thumbnail-renderer,
+  animated-thumbnail-overlay-view-model,
+  .ytAnimatedThumbnailOverlayViewModelHost,
+  .ytd-thumbnail-overlay-loading-preview-renderer {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+/* ==========================================================================
+   MODULO 4: Virtualizzazione DOM (ytnb-dom-virt)
+   Esclude ytd-continuation-item-renderer per preservare l'infinite scroll
+   ========================================================================== */
+@scope (:root.ytnb-dom-virt) {
+  ytd-compact-video-renderer,
+  ytd-compact-playlist-renderer,
+  ytd-compact-radio-renderer,
+  #related yt-lockup-view-model {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 96px;
+  }
+
+  ytd-comment-thread-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 120px;
+  }
+
+  ytd-rich-item-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 320px;
+  }
+
+  ytd-video-renderer,
+  ytd-playlist-renderer,
+  ytd-radio-renderer,
+  ytd-channel-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 204px;
+  }
+
+  ytd-playlist-video-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 100px;
+  }
+
+  ytd-playlist-panel-video-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 68px;
+  }
+
+  yt-live-chat-text-message-renderer,
+  yt-live-chat-paid-message-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 44px;
+  }
+
+  ytm-rich-item-renderer,
+  ytm-video-with-context-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 290px;
+  }
+
+  ytm-compact-video-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 96px;
+  }
+
+  ytm-comment-thread-renderer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 110px;
+  }
+}
+
+/* ==========================================================================
+   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim) + Donut Scope
+   Preserva nativamente volume slider, fade autohide e menu impostazioni player
+   ========================================================================== */
+@scope (:root.ytnb-fast-anim) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  tp-yt-paper-ripple,
+  yt-interaction {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+@scope (:root.ytnb-fast-anim) to (
+  .ytp-chrome-bottom,
+  .ytp-chrome-top,
+  .ytp-gradient-bottom,
+  .ytp-gradient-top,
+  .ytp-autohide-fade-transition,
+  .ytp-volume-area,
+  .ytp-volume-panel,
+  .ytp-volume-popover,
+  .ytp-settings-menu,
+  .ytp-panel
+) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
+    animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
