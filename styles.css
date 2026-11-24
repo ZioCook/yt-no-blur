@@ -1,7 +1,8 @@
 /* ==========================================================================
    YT No Blur v3.0.1 - Modular Extreme Performance CSS (Desktop & Mobile)
-   - Ogni modulo è governato da `@scope (:root.ytnb-*)` (Blink StyleScopeFrame O(1))
-   - Modulo 5 usa Donut Scope con boundary immediato su #movie_player (zero lag)
+   - Ridotto da 6 a 2 soli blocchi @scope (minimizza overhead StyleScopeFrame)
+   - Donut Scope con soli ID nel `to (...)` -> fast-reject !HasID() su ~90% nodi
+   - Moduli non-universali (2, 3, 4) in bucket id_rules_/tag_rules_ + Bloom O(1)
    ========================================================================== */
 
 /* Variabili tema valutate UNA SOLA VOLTA sulla radice (ereditano negli Shadow DOM) */
@@ -76,117 +77,120 @@ html[dark] {
 
 /* ==========================================================================
    MODULO 2: Disattiva Ambient Mode / Cinematics (ytnb-no-ambient)
+   Bucketed per ID/tag/classe (zero @scope, zero costo sul resto del DOM)
    ========================================================================== */
-@scope (:root.ytnb-no-ambient) {
-  #cinematics,
-  #cinematics-container,
-  #cinematics-full-bleed-container,
-  ytd-cinematics,
-  ytd-cinematic-container,
-  .player-cinematics {
-    display: none !important;
-    pointer-events: none !important;
-  }
+html.ytnb-no-ambient #cinematics,
+html.ytnb-no-ambient #cinematics-container,
+html.ytnb-no-ambient #cinematics-full-bleed-container,
+html.ytnb-no-ambient ytd-cinematics,
+html.ytnb-no-ambient ytd-cinematic-container,
+html.ytnb-no-ambient .player-cinematics {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 /* ==========================================================================
    MODULO 3: Blocca Anteprime Video Hover (ytnb-no-hover)
+   Bucketed per ID/tag/classe (zero @scope, zero costo sul resto del DOM)
    ========================================================================== */
-@scope (:root.ytnb-no-hover) {
-  ytd-video-preview,
-  #mouseover-overlay,
-  ytd-moving-thumbnail-renderer,
-  animated-thumbnail-overlay-view-model,
-  .ytAnimatedThumbnailOverlayViewModelHost,
-  .ytd-thumbnail-overlay-loading-preview-renderer {
-    display: none !important;
-    pointer-events: none !important;
-  }
+html.ytnb-no-hover ytd-video-preview,
+html.ytnb-no-hover #mouseover-overlay,
+html.ytnb-no-hover ytd-moving-thumbnail-renderer,
+html.ytnb-no-hover animated-thumbnail-overlay-view-model,
+html.ytnb-no-hover .ytAnimatedThumbnailOverlayViewModelHost,
+html.ytnb-no-hover .ytd-thumbnail-overlay-loading-preview-renderer {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 /* ==========================================================================
    MODULO 4: Virtualizzazione DOM (ytnb-dom-virt)
-   Esclude ytd-continuation-item-renderer per preservare l'infinite scroll
+   Bucketed per tag Custom Element; esclude ytd-continuation-item-renderer
    ========================================================================== */
-@scope (:root.ytnb-dom-virt) {
-  ytd-compact-video-renderer,
-  ytd-compact-playlist-renderer,
-  ytd-compact-radio-renderer,
-  #related yt-lockup-view-model {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 96px;
-  }
+html.ytnb-dom-virt ytd-compact-video-renderer,
+html.ytnb-dom-virt ytd-compact-playlist-renderer,
+html.ytnb-dom-virt ytd-compact-radio-renderer,
+html.ytnb-dom-virt #related yt-lockup-view-model {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 96px;
+}
 
-  ytd-comment-thread-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 120px;
-  }
+html.ytnb-dom-virt ytd-comment-thread-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 120px;
+}
 
-  ytd-rich-item-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 320px;
-  }
+html.ytnb-dom-virt ytd-rich-item-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 320px;
+}
 
-  ytd-video-renderer,
-  ytd-playlist-renderer,
-  ytd-radio-renderer,
-  ytd-channel-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 204px;
-  }
+html.ytnb-dom-virt ytd-video-renderer,
+html.ytnb-dom-virt ytd-playlist-renderer,
+html.ytnb-dom-virt ytd-radio-renderer,
+html.ytnb-dom-virt ytd-channel-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 204px;
+}
 
-  ytd-playlist-video-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 100px;
-  }
+html.ytnb-dom-virt ytd-playlist-video-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 100px;
+}
 
-  ytd-playlist-panel-video-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 68px;
-  }
+html.ytnb-dom-virt ytd-playlist-panel-video-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 68px;
+}
 
-  yt-live-chat-text-message-renderer,
-  yt-live-chat-paid-message-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 44px;
-  }
+html.ytnb-dom-virt yt-live-chat-text-message-renderer,
+html.ytnb-dom-virt yt-live-chat-paid-message-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 44px;
+}
 
-  ytm-rich-item-renderer,
-  ytm-video-with-context-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 290px;
-  }
+html.ytnb-dom-virt ytm-rich-item-renderer,
+html.ytnb-dom-virt ytm-video-with-context-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 290px;
+}
 
-  ytm-compact-video-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 96px;
-  }
+html.ytnb-dom-virt ytm-compact-video-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 96px;
+}
 
-  ytm-comment-thread-renderer {
-    content-visibility: auto;
-    contain-intrinsic-block-size: auto 110px;
-  }
+html.ytnb-dom-virt ytm-comment-thread-renderer {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 110px;
 }
 
 /* ==========================================================================
-   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim)
-   Boundary istantaneo su #movie_player: preserva nativamente tutto il player
+   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim) + Donut Scope
+   - Boundary a soli ID (fast-reject !HasID() su ~90% dei nodi DOM)
+   - Copre Watch/Miniplayer, Channel Trailer, Shorts e Mobile Web Controls
+   - Mantiene animation-iteration-count: 1 per impedire loop a 0.001ms
    ========================================================================== */
-@scope (:root.ytnb-fast-anim) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-  }
-
-  tp-yt-paper-ripple,
-  yt-interaction {
-    display: none !important;
-    pointer-events: none !important;
-  }
+html.ytnb-fast-anim,
+html.ytnb-fast-anim body,
+html.ytnb-fast-anim ytd-app,
+html.ytnb-fast-anim #guide-inner-content,
+html.ytnb-fast-anim #items {
+  scroll-behavior: auto !important;
 }
 
-@scope (:root.ytnb-fast-anim) to (#movie_player, #c4-player) {
+html.ytnb-fast-anim tp-yt-paper-ripple,
+html.ytnb-fast-anim yt-interaction {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+@scope (:root.ytnb-fast-anim) to (
+  #movie_player,
+  #c4-player,
+  #shorts-player,
+  #player-control-overlay
+) {
   *,
   *::before,
   *::after {

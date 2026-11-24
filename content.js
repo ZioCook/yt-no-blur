@@ -2,7 +2,8 @@
    YT No Blur v3.0.1 - MAIN World Engine (run_at: document_start)
    - Startup sincrono 0 ns da cache L1 (zero FOUC, zero race con ytcfg/ShadowDOM)
    - Toggle live istantaneo per Light DOM, Shadow DOM (replaceSync O(1)) e hook JS
-   - 100% CSP & Trusted Types Safe | Zero RAF Loop | Zero Polling
+   - ZERO monkeypatch su WAAPI / document.timeline (elimina loop rAF polyfill)
+   - 100% CSP & Trusted Types Safe | Zero Polling
    ========================================================================== */
 (() => {
   'use strict';
@@ -191,8 +192,8 @@
   });
 
   /* ------------------------------------------------------------------------
-     MODULO 2: Flag separati in ytcfg (Ambient Mode vs Animazioni)
-     Disattiva nativamente le animazioni Polymer senza toccare i polyfill JS
+     MODULO 2: Flag nativi separati in ytcfg (Ambient Mode vs Animazioni)
+     Disattiva Lottie/Ink/Cinematics a monte senza toccare WAAPI/timeline
      ------------------------------------------------------------------------ */
   const AMBIENT_FLAGS = {
     kevlar_watch_cinematics: false,
