@@ -97,9 +97,7 @@ html.ytnb-no-blur yt-thumbnail-view-model,
 html.ytnb-no-blur yt-icon,
 html.ytnb-no-blur yt-img-shadow,
 html.ytnb-no-blur .ytp-settings-menu,
-html.ytnb-no-blur .ytp-popup,
-html.ytnb-no-blur .ytp-chrome-bottom,
-html.ytnb-no-blur .ytp-chrome-top {
+html.ytnb-no-blur .ytp-popup {
   will-change: auto !important;
 }
 
