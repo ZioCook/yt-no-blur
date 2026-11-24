@@ -1,8 +1,8 @@
 /* ==========================================================================
-   YT No Blur v3.0.1 - MAIN World Engine (run_at: document_start)
+   YT No Blur v3.0.2 - MAIN World Engine (run_at: document_start)
    - Startup sincrono 0 ns da cache L1 (zero FOUC, zero race con ytcfg/ShadowDOM)
-   - Toggle live istantaneo per Light DOM, Shadow DOM (replaceSync O(1)) e hook JS
-   - ZERO monkeypatch su WAAPI / document.timeline (elimina loop rAF polyfill)
+   - Shadow DOM stylesheet Zero-Universali (universal_rules_ vuoto anche negli ShadowRoot)
+   - ZERO monkeypatch su WAAPI / document.timeline
    - 100% CSP & Trusted Types Safe | Zero Polling
    ========================================================================== */
 (() => {
@@ -33,7 +33,6 @@
     return out;
   };
 
-  // Lettura SINCRONA a t = 0 ns dalla cache L1 (fallback sicuro su DEFAULTS)
   const loadSyncState = () => {
     try {
       const raw = window.localStorage.getItem(CACHE_KEY);
@@ -73,16 +72,17 @@
   }
 
   /* ------------------------------------------------------------------------
-     MODULO 1: Shadow DOM Constructable Stylesheet Dinamico O(1) (Lit-proof)
+     MODULO 1: Shadow DOM Constructable Stylesheet Zero-Universali (Lit-proof)
+     Solo selettori mirati per ID/classe/tag -> universal_rules_ vuoto
      ------------------------------------------------------------------------ */
   const buildShadowCss = (s) => {
     const parts = [];
     if (s.noBlur) {
       parts.push(
-        '*,*::before,*::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}',
-        ':where(:not(video,svg,g,path,use)),*::before,*::after{filter:none!important}',
-        ':where(:not(video)){will-change:auto!important}',
-        '#frosted-glass{display:none!important}'
+        '#frosted-glass{display:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;filter:none!important}',
+        '.ytBadgeShapeThumbnailBadge,.ytBadgeShapeThumbnailBadgeRedesign,.yt-spec-button-shape-next--enable-backdrop-filter-experiment,.ytSpecButtonShapeNextEnableBackdropFilterExperiment,.ytTooltipContainerPlayerTooltipContentBlurred,.ytSheetViewModelHost,yt-sheet-view-model,tp-yt-paper-dialog,tp-yt-paper-toast{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}',
+        '#blur-background,.blurred-background,.ytCollectionsStackCollectionStack1,.ytCollectionsStackCollectionStack2,.ytPageHeaderViewModelImmersiveBackground{filter:none!important}',
+        'tp-yt-paper-ripple,yt-interaction,yt-icon,yt-img-shadow,tp-yt-app-drawer,tp-yt-paper-dialog{will-change:auto!important}'
       );
     }
     if (s.noAmbient) {
@@ -97,8 +97,8 @@
     }
     if (s.fastAnim) {
       parts.push(
-        '*,*::before,*::after{transition-duration:0.001ms!important;transition-delay:0s!important;animation-duration:0.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important}',
-        'tp-yt-paper-ripple,yt-interaction{display:none!important;pointer-events:none!important}'
+        'tp-yt-paper-ripple,yt-interaction,yt-touch-feedback-shape{display:none!important;pointer-events:none!important}',
+        'tp-yt-app-drawer,#contentContainer,#scrim,tp-yt-paper-dialog,tp-yt-paper-toast,tp-yt-iron-dropdown,yt-sheet-view-model{transition-duration:0.001ms!important;transition-delay:0s!important;animation-duration:0.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important}'
       );
     }
     return parts.join('\n');
@@ -122,6 +122,10 @@
 
     const ensureSheet = (sr, incoming) => {
       const current = incoming ?? (nativeGet ? nativeGet.call(sr) : sr.adoptedStyleSheets);
+      // Fast-path: evita allocazioni e ri-assegnazioni se shadowSheet è già in coda
+      if (!incoming && current.length > 0 && current[current.length - 1] === shadowSheet) {
+        return;
+      }
       const list = Array.from(current);
       const idx = list.indexOf(shadowSheet);
       if (idx === -1) {
@@ -193,7 +197,6 @@
 
   /* ------------------------------------------------------------------------
      MODULO 2: Flag nativi separati in ytcfg (Ambient Mode vs Animazioni)
-     Disattiva Lottie/Ink/Cinematics a monte senza toccare WAAPI/timeline
      ------------------------------------------------------------------------ */
   const AMBIENT_FLAGS = {
     kevlar_watch_cinematics: false,

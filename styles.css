@@ -1,11 +1,10 @@
 /* ==========================================================================
-   YT No Blur v3.0.1 - Modular Extreme Performance CSS (Desktop & Mobile)
-   - Ridotto da 6 a 2 soli blocchi @scope (minimizza overhead StyleScopeFrame)
-   - Donut Scope con soli ID nel `to (...)` -> fast-reject !HasID() su ~90% nodi
-   - Moduli non-universali (2, 3, 4) in bucket id_rules_/tag_rules_ + Bloom O(1)
+   YT No Blur v3.0.2 - Zero-Universal / Zero-@scope O(1) CSS (Desktop & Mobile)
+   - 0 selettori *, *::before, *::after, :where(:not(...)) -> universal_rules_ VUOTO
+   - 0 blocchi @scope -> azzera invalidazioni whole_subtree su :root
+   - 100% delle regole indicizzate in Blink id_rules_ / class_rules_ / tag_rules_
    ========================================================================== */
 
-/* Variabili tema valutate UNA SOLA VOLTA sulla radice (ereditano negli Shadow DOM) */
 :root {
   --ytnb-bg-base: var(--yt-spec-base-background, #ffffff);
   --ytnb-bg-raised: var(--yt-spec-raised-background, #f2f2f2);
@@ -19,65 +18,131 @@ html[dark] {
 /* ==========================================================================
    MODULO 1: Rimuovi Blur, Trasparenze e Layer GPU superflui (ytnb-no-blur)
    ========================================================================== */
-@scope (:root.ytnb-no-blur) {
-  *,
-  *::before,
-  *::after {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
 
-  /* O(1) tag-name check; preserva accessibilità root, video e ombre SVG player */
-  :where(:not(html, body, video, svg, g, path, use)),
-  *::before,
-  *::after {
-    filter: none !important;
-  }
+/* Kill-switch nativo O(1) per tutte le superfici Liquid Glass del player 2025/2026 */
+html.ytnb-no-blur #movie_player,
+html.ytnb-no-blur #c4-player,
+html.ytnb-no-blur #shorts-player {
+  --yt-frosted-glass-backdrop-filter-override: none !important;
+}
 
-  /* Stop promozione speculativa layer GPU Polymer (preserva decoder <video>) */
-  :where(:not(video)) {
-    will-change: auto !important;
-  }
+/* Rimozione mirata backdrop-filter (Desktop, Delhi Player, Badge 2026, Mobile) */
+html.ytnb-no-blur #frosted-glass,
+html.ytnb-no-blur ytd-masthead,
+html.ytnb-no-blur #masthead,
+html.ytnb-no-blur #masthead-container,
+html.ytnb-no-blur #background.ytd-masthead,
+html.ytnb-no-blur ytd-feed-filter-chip-bar-renderer,
+html.ytnb-no-blur #chips-wrapper,
+html.ytnb-no-blur yt-chip-cloud-renderer,
+html.ytnb-no-blur tp-yt-paper-dialog,
+html.ytnb-no-blur tp-yt-paper-toast,
+html.ytnb-no-blur ytd-menu-popup-renderer,
+html.ytnb-no-blur ytd-multi-page-menu-renderer,
+html.ytnb-no-blur yt-sheet-view-model,
+html.ytnb-no-blur .ytSheetViewModelHost,
+html.ytnb-no-blur .ytSearchboxComponentSuggestionsContainer,
+html.ytnb-no-blur .sbdd_b,
+html.ytnb-no-blur ytd-unified-search-suggestions-renderer,
+html.ytnb-no-blur .ytBadgeShapeThumbnailBadge,
+html.ytnb-no-blur .ytBadgeShapeThumbnailBadgeRedesign,
+html.ytnb-no-blur .yt-spec-button-shape-next--enable-backdrop-filter-experiment,
+html.ytnb-no-blur .ytSpecButtonShapeNextEnableBackdropFilterExperiment,
+html.ytnb-no-blur .ytTooltipContainerPlayerTooltipContentBlurred,
+html.ytnb-no-blur .ytp-chrome-controls,
+html.ytnb-no-blur .ytp-left-controls,
+html.ytnb-no-blur .ytp-right-controls,
+html.ytnb-no-blur .ytp-time-wrapper,
+html.ytnb-no-blur .ytp-popup,
+html.ytnb-no-blur .ytp-settings-menu,
+html.ytnb-no-blur .ytp-volume-popover,
+html.ytnb-no-blur .ytp-tooltip-text,
+html.ytnb-no-blur .ytp-tooltip-bg,
+html.ytnb-no-blur .ytp-bezel,
+html.ytnb-no-blur .ytp-bezel-text,
+html.ytnb-no-blur .ytp-button,
+html.ytnb-no-blur ytm-mobile-topbar-renderer,
+html.ytnb-no-blur ytm-feed-filter-chip-bar-renderer,
+html.ytnb-no-blur ytm-bottom-sheet-renderer,
+html.ytnb-no-blur .mobile-topbar-header,
+html.ytnb-no-blur .player-controls-background,
+html.ytnb-no-blur .ytm-autonav-bar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
-  #frosted-glass,
-  .ytd-app#frosted-glass {
-    display: none !important;
-  }
+/* Rimozione mirata filter: blur() su sfondi Shorts, Playlist, Mix e header */
+html.ytnb-no-blur #frosted-glass,
+html.ytnb-no-blur #blur-background,
+html.ytnb-no-blur .collections-stack-wiz__collection-stack1,
+html.ytnb-no-blur .ytCollectionsStackCollectionStack1,
+html.ytnb-no-blur .ytCollectionsStackCollectionStack2,
+html.ytnb-no-blur .immersive-header-background-wrapper,
+html.ytnb-no-blur .ytPageHeaderViewModelImmersiveBackground,
+html.ytnb-no-blur .blurred-background,
+html.ytnb-no-blur .ytp-cued-thumbnail-overlay-image {
+  filter: none !important;
+}
 
-  ytd-masthead,
-  #masthead,
-  #masthead-container,
-  #background.ytd-masthead,
-  ytd-feed-filter-chip-bar-renderer,
-  ytd-feed-filter-chip-bar-renderer #chips-wrapper,
-  ytd-feed-filter-chip-bar-renderer #container,
-  ytm-mobile-topbar-renderer,
-  ytm-feed-filter-chip-bar-renderer {
-    background: var(--ytnb-bg-base) !important;
-  }
+/* Stop promozione speculativa layer GPU (esclude <video> e .ytp-play-progress) */
+html.ytnb-no-blur ytd-masthead,
+html.ytnb-no-blur #masthead-container,
+html.ytnb-no-blur ytd-miniplayer,
+html.ytnb-no-blur tp-yt-app-drawer,
+html.ytnb-no-blur tp-yt-paper-dialog,
+html.ytnb-no-blur tp-yt-paper-ripple,
+html.ytnb-no-blur yt-interaction,
+html.ytnb-no-blur ytd-thumbnail,
+html.ytnb-no-blur yt-thumbnail-view-model,
+html.ytnb-no-blur yt-icon,
+html.ytnb-no-blur yt-img-shadow,
+html.ytnb-no-blur .ytp-settings-menu,
+html.ytnb-no-blur .ytp-popup,
+html.ytnb-no-blur .ytp-chrome-bottom,
+html.ytnb-no-blur .ytp-chrome-top {
+  will-change: auto !important;
+}
 
-  tp-yt-paper-dialog,
-  tp-yt-paper-toast,
-  ytd-menu-popup-renderer,
-  ytd-multi-page-menu-renderer,
-  yt-sheet-view-model,
-  .ytSheetViewModelHost,
-  .ytSearchboxComponentSuggestionsContainer,
-  .sbdd_b {
-    background-color: var(--ytnb-bg-raised) !important;
-  }
+/* Nasconde il livello vetro satinato e applica sfondi solidi opachi */
+html.ytnb-no-blur #frosted-glass,
+html.ytnb-no-blur .ytd-app#frosted-glass {
+  display: none !important;
+}
 
-  /* Guscio menu player (esclude .ytp-panel interno per slide puliti) */
-  .ytp-popup:not(.ytp-button),
-  .ytp-settings-menu,
-  .ytp-volume-popover {
-    background-color: rgba(20, 20, 20, 0.96) !important;
-  }
+html.ytnb-no-blur ytd-masthead,
+html.ytnb-no-blur #masthead,
+html.ytnb-no-blur #masthead-container,
+html.ytnb-no-blur #background.ytd-masthead,
+html.ytnb-no-blur ytd-feed-filter-chip-bar-renderer,
+html.ytnb-no-blur ytd-feed-filter-chip-bar-renderer #chips-wrapper,
+html.ytnb-no-blur ytd-feed-filter-chip-bar-renderer #container,
+html.ytnb-no-blur ytm-mobile-topbar-renderer,
+html.ytnb-no-blur ytm-feed-filter-chip-bar-renderer {
+  background: var(--ytnb-bg-base) !important;
+}
+
+html.ytnb-no-blur tp-yt-paper-dialog,
+html.ytnb-no-blur tp-yt-paper-toast,
+html.ytnb-no-blur ytd-menu-popup-renderer,
+html.ytnb-no-blur ytd-multi-page-menu-renderer,
+html.ytnb-no-blur yt-sheet-view-model,
+html.ytnb-no-blur .ytSheetViewModelHost,
+html.ytnb-no-blur .ytSearchboxComponentSuggestionsContainer,
+html.ytnb-no-blur .sbdd_b,
+html.ytnb-no-blur ytd-unified-search-suggestions-renderer,
+html.ytnb-no-blur ytm-bottom-sheet-renderer {
+  background-color: var(--ytnb-bg-raised) !important;
+}
+
+/* Guscio menu player (esclude .ytp-panel interno per slide puliti) */
+html.ytnb-no-blur .ytp-popup:not(.ytp-button),
+html.ytnb-no-blur .ytp-settings-menu,
+html.ytnb-no-blur .ytp-volume-popover {
+  background-color: rgba(20, 20, 20, 0.96) !important;
 }
 
 /* ==========================================================================
    MODULO 2: Disattiva Ambient Mode / Cinematics (ytnb-no-ambient)
-   Bucketed per ID/tag/classe (zero @scope, zero costo sul resto del DOM)
    ========================================================================== */
 html.ytnb-no-ambient #cinematics,
 html.ytnb-no-ambient #cinematics-container,
@@ -91,7 +156,6 @@ html.ytnb-no-ambient .player-cinematics {
 
 /* ==========================================================================
    MODULO 3: Blocca Anteprime Video Hover (ytnb-no-hover)
-   Bucketed per ID/tag/classe (zero @scope, zero costo sul resto del DOM)
    ========================================================================== */
 html.ytnb-no-hover ytd-video-preview,
 html.ytnb-no-hover #mouseover-overlay,
@@ -105,7 +169,7 @@ html.ytnb-no-hover .ytd-thumbnail-overlay-loading-preview-renderer {
 
 /* ==========================================================================
    MODULO 4: Virtualizzazione DOM (ytnb-dom-virt)
-   Bucketed per tag Custom Element; esclude ytd-continuation-item-renderer
+   Esclude ytd-continuation-item-renderer per preservare l'infinite scroll
    ========================================================================== */
 html.ytnb-dom-virt ytd-compact-video-renderer,
 html.ytnb-dom-virt ytd-compact-playlist-renderer,
@@ -166,10 +230,9 @@ html.ytnb-dom-virt ytm-comment-thread-renderer {
 }
 
 /* ==========================================================================
-   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim) + Donut Scope
-   - Boundary a soli ID (fast-reject !HasID() su ~90% dei nodi DOM)
-   - Copre Watch/Miniplayer, Channel Trailer, Shorts e Mobile Web Controls
-   - Mantiene animation-iteration-count: 1 per impedire loop a 0.001ms
+   MODULO 5: Riduci Animazioni & Transizioni Esterne (ytnb-fast-anim)
+   Zero @scope, zero *: il player (#movie_player) resta 100% nativo per assenza
+   di selettori impattanti. Mantiene 0.001ms + iteration-count: 1 sui drawer/popup.
    ========================================================================== */
 html.ytnb-fast-anim,
 html.ytnb-fast-anim body,
@@ -180,24 +243,30 @@ html.ytnb-fast-anim #items {
 }
 
 html.ytnb-fast-anim tp-yt-paper-ripple,
-html.ytnb-fast-anim yt-interaction {
+html.ytnb-fast-anim yt-interaction,
+html.ytnb-fast-anim yt-touch-feedback-shape {
   display: none !important;
   pointer-events: none !important;
 }
 
-@scope (:root.ytnb-fast-anim) to (
-  #movie_player,
-  #c4-player,
-  #shorts-player,
-  #player-control-overlay
-) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.001ms !important;
-    transition-delay: 0s !important;
-    animation-duration: 0.001ms !important;
-    animation-delay: 0s !important;
-    animation-iteration-count: 1 !important;
-  }
+html.ytnb-fast-anim tp-yt-app-drawer,
+html.ytnb-fast-anim tp-yt-app-drawer #contentContainer,
+html.ytnb-fast-anim tp-yt-app-drawer #scrim,
+html.ytnb-fast-anim tp-yt-paper-dialog,
+html.ytnb-fast-anim tp-yt-paper-toast,
+html.ytnb-fast-anim tp-yt-iron-dropdown,
+html.ytnb-fast-anim tp-yt-iron-overlay-backdrop,
+html.ytnb-fast-anim ytd-popup-container,
+html.ytnb-fast-anim ytd-menu-popup-renderer,
+html.ytnb-fast-anim ytd-multi-page-menu-renderer,
+html.ytnb-fast-anim yt-sheet-view-model,
+html.ytnb-fast-anim ytd-guide-renderer,
+html.ytnb-fast-anim ytd-mini-guide-renderer,
+html.ytnb-fast-anim ytd-masthead,
+html.ytnb-fast-anim ytm-bottom-sheet-renderer {
+  transition-duration: 0.001ms !important;
+  transition-delay: 0s !important;
+  animation-duration: 0.001ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
 }
