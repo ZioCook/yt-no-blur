@@ -1,8 +1,8 @@
 /* ==========================================================================
-   YT No Blur v3.0.0 - MAIN World Engine (run_at: document_start)
+   YT No Blur v3.0.1 - MAIN World Engine (run_at: document_start)
    - Startup sincrono 0 ns da cache L1 (zero FOUC, zero race con ytcfg/ShadowDOM)
    - Toggle live istantaneo per Light DOM, Shadow DOM (replaceSync O(1)) e hook JS
-   - 100% CSP & Trusted Types Safe | Zero Polling
+   - 100% CSP & Trusted Types Safe | Zero RAF Loop | Zero Polling
    ========================================================================== */
 (() => {
   'use strict';
@@ -65,7 +65,6 @@
   };
 
   if (!applyRootClasses()) {
-    // Fallback one-shot per rarissimi iframe senza <html> pronto a document_start
     const bootMo = new MutationObserver(() => {
       if (applyRootClasses()) bootMo.disconnect();
     });
@@ -186,7 +185,6 @@
 
     if (shadowDirty && shadowSheet) {
       try {
-        // Aggiorna istantaneamente TUTTI gli Shadow DOM della pagina in O(1)
         shadowSheet.replaceSync(buildShadowCss(state));
       } catch {}
     }
@@ -194,6 +192,7 @@
 
   /* ------------------------------------------------------------------------
      MODULO 2: Flag separati in ytcfg (Ambient Mode vs Animazioni)
+     Disattiva nativamente le animazioni Polymer senza toccare i polyfill JS
      ------------------------------------------------------------------------ */
   const AMBIENT_FLAGS = {
     kevlar_watch_cinematics: false,
@@ -363,100 +362,4 @@
       return origPlay.apply(this, arguments);
     };
   }
-
-  /* ------------------------------------------------------------------------
-     MODULO 6: WAAPI & web-animations-next-lite (toggle live + bypass player)
-     ------------------------------------------------------------------------ */
-  const PLAYER_ANIM_ALLOW =
-    '.ytp-chrome-bottom,.ytp-chrome-top,.ytp-gradient-bottom,.ytp-gradient-top,.ytp-autohide-fade-transition,.ytp-volume-area,.ytp-volume-panel,.ytp-volume-popover,.ytp-settings-menu,.ytp-panel';
-
-  let cachedMainPlayer = null;
-
-  const isAllowedPlayerNode = (el) => {
-    if (!(el instanceof Element)) return false;
-
-    if (!cachedMainPlayer || !cachedMainPlayer.isConnected) {
-      cachedMainPlayer = document.getElementById('movie_player');
-    }
-    let inPlayer = cachedMainPlayer !== null && cachedMainPlayer.contains(el);
-    if (!inPlayer) {
-      const channelPlayer = document.getElementById('c4-player');
-      inPlayer = channelPlayer !== null && channelPlayer.contains(el);
-    }
-    if (!inPlayer) return false;
-
-    return el.closest(PLAYER_ANIM_ALLOW) !== null;
-  };
-
-  const clampTiming = (options) => {
-    if (typeof options === 'number') return 0;
-    if (options && typeof options === 'object') {
-      return {
-        ...options,
-        duration: 0,
-        delay: 0,
-        endDelay: 0,
-        iterations: options.iterations === Infinity ? 1 : (options.iterations ?? 1)
-      };
-    }
-    return 0;
-  };
-
-  const wrapAnimate = () => {
-    const fn = Element.prototype.animate;
-    if (typeof fn !== 'function' || fn.__ytnbWrapped) return;
-    const wrapped = function (keyframes, options) {
-      if (!state.fastAnim || isAllowedPlayerNode(this)) {
-        return fn.call(this, keyframes, options);
-      }
-      return fn.call(this, keyframes, clampTiming(options));
-    };
-    Object.defineProperty(wrapped, '__ytnbWrapped', { value: true });
-    Element.prototype.animate = wrapped;
-  };
-
-  const wrapTimelinePlay = () => {
-    const tl = document.timeline;
-    if (!tl || typeof tl.play !== 'function' || tl.play.__ytnbWrapped) return;
-    const origPlayFn = tl.play;
-    const wrappedPlay = function (effect) {
-      if (!state.fastAnim || (effect && isAllowedPlayerNode(effect.target))) {
-        return origPlayFn.call(this, effect);
-      }
-
-      try {
-        if (effect && typeof effect.updateTiming === 'function') {
-          effect.updateTiming({ duration: 0, delay: 0, endDelay: 0, iterations: 1 });
-        } else if (effect && effect._timing) {
-          effect._timing.duration = 0;
-          effect._timing.delay = 0;
-          if (effect._timing.iterations === Infinity) effect._timing.iterations = 1;
-        }
-      } catch {}
-
-      const anim = origPlayFn.call(this, effect);
-      queueMicrotask(() => {
-        try {
-          if (anim && anim.playState === 'running' && typeof anim.finish === 'function') {
-            anim.finish();
-          }
-        } catch {}
-      });
-      return anim;
-    };
-    Object.defineProperty(wrappedPlay, '__ytnbWrapped', { value: true });
-    tl.play = wrappedPlay;
-  };
-
-  wrapAnimate();
-  wrapTimelinePlay();
-
-  document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-      wrapAnimate();
-      wrapTimelinePlay();
-    },
-    { once: true }
-  );
 })();

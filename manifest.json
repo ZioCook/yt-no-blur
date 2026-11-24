@@ -1,7 +1,7 @@
 ﻿{
   "manifest_version": 3,
   "name": "YT No Blur",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Ottimizzazione estrema e modulare per YouTube: rimuove blur, Ambient Mode, anteprime hover e animazioni pesanti con virtualizzazione DOM.",
   "minimum_chrome_version": "118",
   "permissions": ["storage"],

@@ -1,8 +1,7 @@
 /* ==========================================================================
-   YT No Blur v3.0.0 - Modular Extreme Performance CSS (Desktop & Mobile)
+   YT No Blur v3.0.1 - Modular Extreme Performance CSS (Desktop & Mobile)
    - Ogni modulo è governato da `@scope (:root.ytnb-*)` (Blink StyleScopeFrame O(1))
-   - Zero ancestor-walk su html.ytnb-*, zero bloat di specificità
-   - Modulo 5 integra il Donut Scope v2.1.0 per volume, autohide e settings player
+   - Modulo 5 usa Donut Scope con boundary immediato su #movie_player (zero lag)
    ========================================================================== */
 
 /* Variabili tema valutate UNA SOLA VOLTA sulla radice (ereditano negli Shadow DOM) */
@@ -170,8 +169,8 @@ html[dark] {
 }
 
 /* ==========================================================================
-   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim) + Donut Scope
-   Preserva nativamente volume slider, fade autohide e menu impostazioni player
+   MODULO 5: Riduci Animazioni & Transizioni (ytnb-fast-anim)
+   Boundary istantaneo su #movie_player: preserva nativamente tutto il player
    ========================================================================== */
 @scope (:root.ytnb-fast-anim) {
   *,
@@ -187,18 +186,7 @@ html[dark] {
   }
 }
 
-@scope (:root.ytnb-fast-anim) to (
-  .ytp-chrome-bottom,
-  .ytp-chrome-top,
-  .ytp-gradient-bottom,
-  .ytp-gradient-top,
-  .ytp-autohide-fade-transition,
-  .ytp-volume-area,
-  .ytp-volume-panel,
-  .ytp-volume-popover,
-  .ytp-settings-menu,
-  .ytp-panel
-) {
+@scope (:root.ytnb-fast-anim) to (#movie_player, #c4-player) {
   *,
   *::before,
   *::after {
